@@ -92,7 +92,7 @@ for site in targets:
     msgTarget  = "Target: " + targets[site] + "\n"
     msgOldHash = "Old hash: " + lastHash + "\n"
     msgNewHash = "New hash: " + contentHash + "\n"
-    msgTimestamp = "Timestamp: " + str(datetime.datetime.now())
+    msgTimestamp = "Timestamp: " + requestTimestamp
 
     mailMsg = MIMEText(
       msgHeader + msgTarget + msgOldHash + msgNewHash + msgTimestamp
