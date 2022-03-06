@@ -9,6 +9,10 @@ import smtplib
 import sqlite3
 import yaml
 
+### Configuration options ###
+config_emailFrom = "SitemonPy@mydomain.net"
+config_emailTo   = "recipientEmail@mydomain.net"
+
 # Define function for console timestamps
 def cTimestamp(message):
   print(str(datetime.datetime.now()) + " " + message)
@@ -18,10 +22,18 @@ myUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:97.0) " +\
               "Gecko/20100101 Firefox/97.0"
 requestsCustomUserAgent = {'user-agent': myUserAgent}
 
+# Get credentials for email + Telegram
+try:
+  with open(r'secrets.yml') as credentialsFile:
+    credentialsYAML = yaml.safe_load(credentialsFile)
+    credentials = credentialsYAML['secrets']
+except IOError:
+  raise    
+
 # Get list of target sites to examine
 try:
-  with open(r'targets.yml') as targetList:
-    targetsYAML = yaml.safe_load(targetList)
+  with open(r'targets.yml') as targetListFile:
+    targetsYAML = yaml.safe_load(targetListFile)
 except IOError:
   raise
 
@@ -91,8 +103,6 @@ for site in targets:
     
     # Send notification via email
     cTimestamp("[i] Sending email notification for " + site)
-    emailUser = "emailuser@emailhost.xyz"
-    emailPswd = "abcd1234abcd5678"
 
     msgHeader  = "SitemonPy content change notification\n\n"
     msgTarget  = "Target: " + targets[site] + "\n"
@@ -110,21 +120,19 @@ for site in targets:
                             ) 
     mailMsg['Subject'] = "SitemonPy - " + site + " - Content change detected"
     mailMsg['Date']    = str(datetime.datetime.now(timezone.utc))
-    mailMsg['From']    = "SitemonPy@mydomain.net"
-    mailMsg['To']      = "recipientEmail@mydomain.net"
+    mailMsg['From']    = config_emailFrom
+    mailMsg['To']      = config_emailTo
   
     with smtplib.SMTP("smtp.emailhost.xyz", 587) as mailServer:
       mailServer.starttls()
-      mailServer.login(emailUser, emailPswd)
+      mailServer.login(credentials['emailUser'], credentials['emailPswd'])
       mailServer.sendmail(mailMsg['From'], mailMsg['To'], mailMsg.as_string())
     cTimestamp("[+] Email notification sent!")
 
     # Send notification via Telegram message
     cTimestamp("[i] Sending Telegram message notification for " + site)
-    tgBotToken = "1234567890:abcdefghijklmnopqrstuvwxyz123456789"
-    tgGroupChatID = "-123456789"
 
-    # For Telegram API: for newline, use '%0A' in place of \n or <br>
+    # Telegram API: for newline, use '%0A' in place of \n or <br>
     tgMsg = "<u>SitemonPy</u>%0A" +\
             "👀 A change to a target site's content was detected:%0A" +\
             "<b>Target</b>: " + targets[site] + "%0A" +\
@@ -132,8 +140,8 @@ for site in targets:
             "Old hash: " + lastHash + "%0A" +\
             "New hash: " + contentHash
     
-    tgMsgReq = "https://api.telegram.org/bot" + tgBotToken +\
-               "/sendMessage?chat_id=" + tgGroupChatID +\
+    tgMsgReq = "https://api.telegram.org/bot" + credentials['tgBotToken'] +\
+               "/sendMessage?chat_id=" + credentials['tgGroupChatID'] +\
                "&parse_mode=HTML&text=" + str(tgMsg)
     tgMsgSend = requests.get(tgMsgReq)
     cTimestamp("[+] Telegram message sent!")
