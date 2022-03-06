@@ -9,6 +9,10 @@ import smtplib
 import sqlite3
 import yaml
 
+# Define function for console timestamps
+def cTimestamp(message):
+  print(str(datetime.datetime.now()) + " " + message)
+
 # Define user agent for web requests
 myUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:97.0) " +\
               "Gecko/20100101 Firefox/97.0"
@@ -27,17 +31,14 @@ dbCursor = db.cursor()
 
 # Exctract list of target sites
 targets = targetsYAML['targets']
-print(str(datetime.datetime.now()) +\
-     " [i] Site targets loaded: " + str(len(targets))
-     )
+cTimestamp("[i] Site targets loaded: " + str(len(targets)))
 
 # Process each target site
 for site in targets:
   # Ensure log file exists, else throw exception
   #try:
   #  with open('logs/' + site + '.txt', 'a') as logFile:
-  #    print(str(datetime.datetime.now()) +\
-  #          " [*] Loaded log file for target: " + site)
+  #    cTimestamp("[*] Loaded log file for target: " + site)
   #except IOError:
   #  raise
 
@@ -75,18 +76,15 @@ for site in targets:
   # Compare hashes + take appropriate action
   if contentHash == lastHash:
     # No changes to page content were detected
-    print(str(datetime.datetime.now()) +\
-            " [+] No content changes detected for target: " + site)
+    cTimestamp("[+] No content changes detected for target: " + site)
   
   else:
     # Site content change is detected!
-    print(str(datetime.datetime.now()) +\
-            " [+] Content change detected for " + site +\
+    cTimestamp("[+] Content change detected for " + site +\
             ", new hash: " + contentHash)
     
     # Send notification via email
-    print(str(datetime.datetime.now()) +\
-         " [i] Sending email notification for " + site)
+    cTimestamp("[i] Sending email notification for " + site)
     emailUser = "emailuser@emailhost.xyz"
     emailPswd = "abcd1234abcd5678"
 
@@ -113,11 +111,10 @@ for site in targets:
       mailServer.starttls()
       mailServer.login(emailUser, emailPswd)
       mailServer.sendmail(mailMsg['From'], mailMsg['To'], mailMsg.as_string())
-    print(str(datetime.datetime.now()) + " [+] Email notification sent!")
+    cTimestamp("[+] Email notification sent!")
 
     # Send notification via Telegram message
-    print(str(datetime.datetime.now()) +\
-         " [i] Sending Telegram message notification for " + site)
+    cTimestamp("[i] Sending Telegram message notification for " + site)
     tgBotToken = "1234567890:abcdefghijklmnopqrstuvwxyz123456789"
     tgGroupChatID = "-123456789"
 
@@ -133,10 +130,10 @@ for site in targets:
                "/sendMessage?chat_id=" + tgGroupChatID +\
                "&parse_mode=HTML&text=" + str(tgMsg)
     tgMsgSend = requests.get(tgMsgReq)
-    print(str(datetime.datetime.now()) + " [+] Telegram message sent!")
+    cTimestamp("[+] Telegram message sent!")
 
 # Close database when complete
-print(str(datetime.datetime.now()) + " [i] All done. Closing database...")
+cTimestamp("[i] All done. Closing database...")
 dbCursor.close()
 db.close()
-print(str(datetime.datetime.now()) + " [x] ... k bye!")
+cTimestamp("[x] ... k bye!")
