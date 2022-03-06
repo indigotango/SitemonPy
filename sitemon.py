@@ -59,7 +59,13 @@ for site in targets:
   # Retrieve result row (there should only be 1 row)
   # "[0]" indicates the first item of the list object (the hash)
   lastHash = dbQuerySelect.fetchone()[0]
-  
+
+  # Handle missing database entries (i.e. if no content hashes for target)
+  if(len(lastHash)) < 1:
+    cTimestamp("[!] No content hashes in database for site " + site)
+    cTimestamp("[+] Saving current hash to database and going to next target")
+    break # Drop out of current loop iteration and go to next target, or exit
+
   # Insert refreshed hash (regardless if new or still current) into database
   dbQueryInsert = dbCursor.execute(
       "INSERT INTO logs (target, hash, timestamp) " +\
