@@ -10,8 +10,10 @@ import sqlite3
 import yaml
 
 ### Configuration options ###
-config_emailFrom = "SitemonPy@mydomain.net"
-config_emailTo   = "recipientEmail@mydomain.net"
+cfg_emailFrom = "SitemonPy@mydomain.net"
+cfg_emailTo   = "recipientEmail@mydomain.net"
+cfg_emailServer = "smtp.emailhost.xyz"
+cfg_emailServerPort = 587
 
 # Define function for console timestamps
 def cTimestamp(message):
@@ -120,10 +122,10 @@ for site in targets:
                             ) 
     mailMsg['Subject'] = "SitemonPy - " + site + " - Content change detected"
     mailMsg['Date']    = str(datetime.datetime.now(timezone.utc))
-    mailMsg['From']    = config_emailFrom
-    mailMsg['To']      = config_emailTo
+    mailMsg['From']    = cfg_emailFrom
+    mailMsg['To']      = cfg_emailTo
   
-    with smtplib.SMTP("smtp.emailhost.xyz", 587) as mailServer:
+    with smtplib.SMTP(cfg_emailServer, cfg_emailServerPort) as mailServer:
       mailServer.starttls()
       mailServer.login(credentials['emailUser'], credentials['emailPswd'])
       mailServer.sendmail(mailMsg['From'], mailMsg['To'], mailMsg.as_string())
