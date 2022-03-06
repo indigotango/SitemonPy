@@ -1,0 +1,6 @@
+# Sites to periodically check for changes
+targets:
+    # EXAMPLE:
+    # alias: https://microsoft.com/xyz
+    testSite1: https://microsoft.com/xyz
+    testSite2: https://apple.com/abc
